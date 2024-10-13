@@ -9,6 +9,8 @@ import time
 from pinecone import Pinecone, ServerlessSpec
 from langchain_pinecone import PineconeVectorStore
 from langchain_core.documents import Document
+from uuid import uuid4 # for assigning ids to the vectors
+
 
 
 load_dotenv()
@@ -25,7 +27,7 @@ existing_indexes = [index_info["name"] for index_info in pc.list_indexes()]
 if index_name not in existing_indexes:
     pc.create_index(
         name=index_name,
-        dimension=3072,
+        dimension=768,
         metric="cosine",
         spec=ServerlessSpec(cloud="aws", region="us-east-1"),
     )
@@ -50,10 +52,6 @@ chatmodel=ChatFireworks(
         max_retries=2,
     )
 
-
-# initializing vector store
-
-vector_store = PineconeVectorStore(index=index, embedding=embmodel)
 
 # function for text extraction
 
@@ -83,10 +81,40 @@ def text_splitting(text):
     return(text_chunks)
 
 
+# function for generating embeddings
 
 def create_embedding(text_chunks):
     embeddings=embmodel.embed_documents(text_chunks)
+    st.write(embeddings)
     return embeddings
+
+
+# initializing vector store
+
+vector_store = PineconeVectorStore(index=index, embedding=embmodel)
+
+
+def store_vectors(text_chunks,embeddings):
+    batch_size = 100  # Adjust based on your Pinecone plan and requirements
+
+    for i in range(0, len(text_chunks), batch_size):
+        batch_texts = text_chunks[i:i + batch_size]
+        batch_embeddings = embeddings[i:i + batch_size]
+
+
+        vectors = [
+            (str(j + i), embedding, {"text": text})
+            for j, (text, embedding) in enumerate(zip(batch_texts, batch_embeddings))
+        ]
+
+        index.upsert(vectors=vectors)
+
+
+
+
+
+
+
 
 
 
@@ -94,7 +122,9 @@ def create_embedding(text_chunks):
 
 with st.sidebar:
     st.header('Welcome to the ChatApp')
-    file=st.text_input('Paste URL of the file: ')
+    file=st.text_input('Please provide path for the file: ')
+    file=file[1:]
+    file=file[:-1]
     btn=st.button('Submit')
 
 
@@ -110,6 +140,7 @@ if btn:
         #st.write(text_chunks)
         embeddings=create_embedding(list(text_chunks))
         st.write(embeddings)
+        store_vectors(list(text_chunks),list(embeddings))
 
 
 
