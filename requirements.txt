@@ -1,0 +1,9 @@
+streamlit
+langchain
+langchain-community
+pypdf2
+langchain-fireworks
+langchain-pinecone
+pinecone-notebooks
+python-dotenv
+opencv-python
