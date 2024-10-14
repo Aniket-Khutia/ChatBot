@@ -124,8 +124,6 @@ if btn:
 
 
 
-
-
     else:
             errorcontainer=st.empty()
             errorcontainer.error('File not found.Please enter path correctly!!')
