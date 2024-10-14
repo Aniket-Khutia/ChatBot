@@ -1,21 +1,18 @@
 import os
-from langchain.text_splitter import RecursiveCharacterTextSplitter
 import streamlit as st
 from dotenv import load_dotenv
-from PyPDF2 import PdfReader
 from langchain_fireworks import FireworksEmbeddings
 from langchain_fireworks import ChatFireworks
 import time
 from pinecone import Pinecone, ServerlessSpec
 from langchain_pinecone import PineconeVectorStore
 from langchain_core.documents import Document
-from uuid import uuid4 # for assigning ids to the vectors
+from fileops import *
+from embedding import *
 
+# load_dotenv()
 
-
-load_dotenv()
-
-fireworks_api_key=os.getenv('FIREWORKS_API_KEY')
+# fireworks_api_key=os.getenv('FIREWORKS_API_KEY')
 pinecone_api_key=os.getenv('PINECONE_API_KEY')
 
 pc=Pinecone(api_key=pinecone_api_key)
@@ -38,55 +35,55 @@ index = pc.Index(index_name)
 
 
 
-# Defining models
+# # Defining models
+#
+# embmodel = FireworksEmbeddings(
+#     model="nomic-ai/nomic-embed-text-v1.5",
+# )
+# chatmodel=ChatFireworks(
+#         api_key=fireworks_api_key,
+#         model="accounts/fireworks/models/llama-v3-70b-instruct",
+#         temperature=0,
+#         max_tokens=None,
+#         timeout=None,
+#         max_retries=2,
+#     )
 
-embmodel = FireworksEmbeddings(
-    model="nomic-ai/nomic-embed-text-v1.5",
-)
-chatmodel=ChatFireworks(
-        api_key=fireworks_api_key,
-        model="accounts/fireworks/models/llama-v3-70b-instruct",
-        temperature=0,
-        max_tokens=None,
-        timeout=None,
-        max_retries=2,
-    )
 
-
-# function for text extraction
-
-def text_extraction(file,typefile):
-    text=''
-    if typefile=='pdf':
-        pdf=PdfReader(file)
-        for page in pdf.pages:
-            text+= page.extract_text()
-        return(text)
-
-    elif typefile in ('jpg','jpeg','png'):
-        pass
+# # function for text extraction
+#
+# def text_extraction(file,typefile):
+#     text=''
+#     if typefile=='pdf':
+#         pdf=PdfReader(file)
+#         for page in pdf.pages:
+#             text+= page.extract_text()
+#         return(text)
+#
+#     elif typefile in ('jpg','jpeg','png'):
+#         pass
 
 
 
 # function for splitting text and converting it into chunks
 
-def text_splitting(text):
-    text_splitter = RecursiveCharacterTextSplitter(
-        separators="\n",
-        chunk_size=500,
-        chunk_overlap=100,
-        length_function=len
-    )
-    text_chunks=text_splitter.split_text(text)
-    return(text_chunks)
+# def text_splitting(text):
+#     text_splitter = RecursiveCharacterTextSplitter(
+#         separators="\n",
+#         chunk_size=500,
+#         chunk_overlap=100,
+#         length_function=len
+#     )
+#     text_chunks=text_splitter.split_text(text)
+#     return(text_chunks)
 
 
 # function for generating embeddings
 
-def create_embedding(text_chunks):
-    embeddings=embmodel.embed_documents(text_chunks)
-    st.write(embeddings)
-    return embeddings
+# def create_embedding(text_chunks):
+#     embeddings=embmodel.embed_documents(text_chunks)
+#     st.write(embeddings)
+#     return embeddings
 
 
 # initializing vector store
