@@ -86,46 +86,47 @@ with st.sidebar:
 
 
 if btn:
-    if file and index_name:
-        successcontainer=st.empty()
-        successcontainer.success('File uploaded successfully!!')
-        time.sleep(2)
-        successcontainer.empty()
-        
-        st.write(file)
-        lastindex=file.rindex('.')
-        typefile = file[lastindex + 1:]
-        st.write("File type is: ",typefile)
-        text=text_extraction(file,typefile)
-        #st.text_area('',text,height=350)
-        text_chunks=text_splitting(text)
-        #st.write(text_chunks)
-        embeddings=create_embedding(list(text_chunks))  # getting the embeddings and dimension of the embeddings
-        embeds=embeddings[0]    # for getting the embeddings
-        dimension=embeddings[1]  # for getting the dimension of vector store
+    success=st.empty()
+    success.success('Please wait for me to analyze your documents.. ')
+    time.sleep(6)
+    success.empty()
 
-        index=setindex(dimension,index_name) # for getting index
+if file and index_name:
+    question=st.chat_input('Ask me anything')
+    # st.write(file)
+    lastindex=file.rindex('.')
+    typefile = file[lastindex + 1:]
+    # st.write("File type is: ",typefile)
+    text=text_extraction(file,typefile)
+    #st.text_area('',text,height=350)
+    text_chunks=text_splitting(text)
+    #st.write(text_chunks)
+    embeddings=create_embedding(list(text_chunks))  # getting the embeddings and dimension of the embeddings
+    embeds=embeddings[0]    # for getting the embeddings
+    dimension=embeddings[1]  # for getting the dimension of vector store
 
-        retriever=vecdbinit(index[0], embmodel)  # for initializing pinecone vector store
+    index=setindex(dimension,index_name) # for getting index
 
-        if index[1]==0:
-            temp=store_vectors(list(text_chunks), list(embeds), index[0])
-            time.sleep(10)
+    retriever=vecdbinit(index[0], embmodel)  # for initializing pinecone vector store
 
-        # st.write(embeds[0])
-        # st.write(dimension)  # Displaying embedding and dimension of each embedding
+    if index[1]==0:
+        temp=store_vectors(list(text_chunks), list(embeds), index[0])
+        time.sleep(10)
 
-        question='What is this about?'
-        QnA(index[0],question,retriever)
+    # st.write(embeds[0])
+    # st.write(dimension)  # Displaying embedding and dimension of each embedding
 
 
+    QnA(question,retriever)
 
 
 
-    else:
-            errorcontainer=st.empty()
-            errorcontainer.error('File not found.Please enter path correctly!!')
-            time.sleep(2)
-            errorcontainer.empty()
+
+
+# else:
+#         errorcontainer=st.empty()
+#         errorcontainer.error('File not found.Please enter path correctly!!')
+#         time.sleep(2)
+#         errorcontainer.empty()
 
 

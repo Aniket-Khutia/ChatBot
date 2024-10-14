@@ -25,7 +25,7 @@ def setindex(dimension,index_name):
             spec=ServerlessSpec(cloud="aws", region="us-east-1"),
         )
         while not pc.describe_index(index_name).status["ready"]:
-            time.sleep(4)
+            time.sleep(2)
     index = pc.Index(index_name)
     return([index,flag])
 
