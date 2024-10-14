@@ -9,30 +9,14 @@ from langchain_pinecone import PineconeVectorStore
 from langchain_core.documents import Document
 from fileops import *
 from embedding import *
+from vecdb import *
 
-# load_dotenv()
+load_dotenv()
 
 # fireworks_api_key=os.getenv('FIREWORKS_API_KEY')
-pinecone_api_key=os.getenv('PINECONE_API_KEY')
-
-pc=Pinecone(api_key=pinecone_api_key)
-
-# Setting up pinecone index
-
-index_name = "vector-index"  # change if desired
-existing_indexes = [index_info["name"] for index_info in pc.list_indexes()]
-if index_name not in existing_indexes:
-    pc.create_index(
-        name=index_name,
-        dimension=768,
-        metric="cosine",
-        spec=ServerlessSpec(cloud="aws", region="us-east-1"),
-    )
-    while not pc.describe_index(index_name).status["ready"]:
-        time.sleep(1)
-index = pc.Index(index_name)
-
-
+# pinecone_api_key=os.getenv('PINECONE_API_KEY')
+#
+# pc=Pinecone(api_key=pinecone_api_key)
 
 
 # # Defining models
@@ -86,32 +70,6 @@ index = pc.Index(index_name)
 #     return embeddings
 
 
-# initializing vector store
-
-vector_store = PineconeVectorStore(index=index, embedding=embmodel)
-
-
-def store_vectors(text_chunks,embeddings):
-    batch_size = 100  # Adjust based on your Pinecone plan and requirements
-
-    for i in range(0, len(text_chunks), batch_size):
-        batch_texts = text_chunks[i:i + batch_size]
-        batch_embeddings = embeddings[i:i + batch_size]
-
-
-        vectors = [
-            (str(j + i), embedding, {"text": text})
-            for j, (text, embedding) in enumerate(zip(batch_texts, batch_embeddings))
-        ]
-
-        index.upsert(vectors=vectors)
-
-
-
-
-
-
-
 
 
 
@@ -135,9 +93,24 @@ if btn:
         st.text_area('',text,height=350)
         text_chunks=text_splitting(text)
         #st.write(text_chunks)
-        embeddings=create_embedding(list(text_chunks))
-        st.write(embeddings)
-        store_vectors(list(text_chunks),list(embeddings))
+        embeddings=create_embedding(list(text_chunks))  # gettiong the embeddings and dimension of the embeddings
+        embeds=embeddings[0]    # for getting the embeddings
+        dimension=embeddings[1]  # for getting the dimension of vector store
+        index=setindex(dimension) # for getting index
+        vecdbinit(index,embmodel) # for initializing pinecone vector store
+
+
+
+
+
+        # st.write(embeds[0])
+        # st.write(dimension)  # Displaying embedding and dimension of each embedding
+
+        store_vectors(list(text_chunks),list(embeds),index)
+        # query='What is the name of the sender?'
+        # query_vector=create_embedding(list(query))
+        # matches=index.query(vector=query_vector,top_k=2)
+        # st.write(matches)
 
 
 
@@ -147,4 +120,5 @@ if btn:
             errorcontainer.error('File not found.Please enter path correctly!!')
             time.sleep(2)
             errorcontainer.empty()
+
 

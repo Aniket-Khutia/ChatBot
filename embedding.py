@@ -26,4 +26,4 @@ chatmodel=ChatFireworks(
 def create_embedding(text_chunks):
     embeddings=embmodel.embed_documents(text_chunks)
     # st.write(embeddings)
-    return embeddings
+    return [embeddings,len(embeddings[0])]
