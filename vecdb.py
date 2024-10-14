@@ -3,6 +3,8 @@ from langchain_pinecone import PineconeVectorStore
 from dotenv import load_dotenv
 import os
 import time
+from langchain.chains import RetrievalQA
+
 load_dotenv()
 pinecone_api_key=os.getenv('PINECONE_API_KEY')
 
@@ -29,9 +31,10 @@ def setindex(dimension,index_name):
 
 
 # initializing vector store
-# def vecdbinit(index,embmodel):
-#     vector_store = PineconeVectorStore(index=index, embedding=embmodel)
-#     return
+def vecdbinit(index,embmodel):
+    vector_store = PineconeVectorStore(index=index, embedding=embmodel)
+    retriever = vector_store.as_retriever(search_kwargs={"k": 4})
+    return retriever
 
 
 # Storing chunks and vector embeddings

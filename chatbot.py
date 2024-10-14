@@ -106,7 +106,7 @@ if btn:
 
         index=setindex(dimension,index_name) # for getting index
 
-        # temp=vecdbinit(index, embmodel)  # for initializing pinecone vector store
+        retriever=vecdbinit(index[0], embmodel)  # for initializing pinecone vector store
 
         if index[1]==0:
             temp=store_vectors(list(text_chunks), list(embeds), index[0])
@@ -116,9 +116,7 @@ if btn:
         # st.write(dimension)  # Displaying embedding and dimension of each embedding
 
         question='What is this about?'
-        QnA(index[0],question)
-
-
+        QnA(index[0],question,retriever)
 
 
 
