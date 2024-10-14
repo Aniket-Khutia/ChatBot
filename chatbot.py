@@ -10,6 +10,7 @@ from langchain_core.documents import Document
 from fileops import *
 from embedding import *
 from vecdb import *
+from QnA import *
 
 load_dotenv()
 
@@ -80,37 +81,47 @@ with st.sidebar:
     file=st.text_input('Please provide path for the file: ')
     file=file[1:]
     file=file[:-1]
-    btn=st.button('Submit')
+    index_name=st.text_input('Please provide the file name: ')
+    btn=st.button('Upload')
 
 
 if btn:
-    if file:
+    if file and index_name:
+        successcontainer=st.empty()
+        successcontainer.success('File uploaded successfully!!')
+        time.sleep(2)
+        successcontainer.empty()
+        
         st.write(file)
         lastindex=file.rindex('.')
         typefile = file[lastindex + 1:]
         st.write("File type is: ",typefile)
         text=text_extraction(file,typefile)
-        st.text_area('',text,height=350)
+        #st.text_area('',text,height=350)
         text_chunks=text_splitting(text)
         #st.write(text_chunks)
-        embeddings=create_embedding(list(text_chunks))  # gettiong the embeddings and dimension of the embeddings
+        embeddings=create_embedding(list(text_chunks))  # getting the embeddings and dimension of the embeddings
         embeds=embeddings[0]    # for getting the embeddings
         dimension=embeddings[1]  # for getting the dimension of vector store
-        index=setindex(dimension) # for getting index
-        vecdbinit(index,embmodel) # for initializing pinecone vector store
 
+        index=setindex(dimension,index_name) # for getting index
 
+        # temp=vecdbinit(index, embmodel)  # for initializing pinecone vector store
 
-
+        if index[1]==0:
+            temp=store_vectors(list(text_chunks), list(embeds), index[0])
+            time.sleep(10)
 
         # st.write(embeds[0])
         # st.write(dimension)  # Displaying embedding and dimension of each embedding
 
-        store_vectors(list(text_chunks),list(embeds),index)
-        # query='What is the name of the sender?'
-        # query_vector=create_embedding(list(query))
-        # matches=index.query(vector=query_vector,top_k=2)
-        # st.write(matches)
+        question='What is this about?'
+        QnA(index[0],question)
+
+
+
+
+
 
 
 

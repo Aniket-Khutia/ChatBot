@@ -10,10 +10,12 @@ pc=Pinecone(api_key=pinecone_api_key)
 
 
 # Setting up pinecone index
-def setindex(dimension):
-    index_name = "vector-index"  # change if desired
+def setindex(dimension,index_name):
+    flag=1
+    index_name = index_name  # change if desired
     existing_indexes = [index_info["name"] for index_info in pc.list_indexes()]
     if index_name not in existing_indexes:
+        flag=0
         pc.create_index(
             name=index_name,
             metric="cosine",
@@ -21,13 +23,16 @@ def setindex(dimension):
             spec=ServerlessSpec(cloud="aws", region="us-east-1"),
         )
         while not pc.describe_index(index_name).status["ready"]:
-            time.sleep(1)
+            time.sleep(4)
     index = pc.Index(index_name)
-    return(index)
+    return([index,flag])
+
 
 # initializing vector store
-def vecdbinit(index,embmodel):
-    vector_store = PineconeVectorStore(index=index, embedding=embmodel)
+# def vecdbinit(index,embmodel):
+#     vector_store = PineconeVectorStore(index=index, embedding=embmodel)
+#     return
+
 
 # Storing chunks and vector embeddings
 def store_vectors(text_chunks,embeddings,index):
@@ -44,3 +49,4 @@ def store_vectors(text_chunks,embeddings,index):
         ]
 
         index.upsert(vectors=vectors)
+        return
